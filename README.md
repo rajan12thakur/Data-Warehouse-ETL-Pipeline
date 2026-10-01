@@ -765,13 +765,13 @@ This project demonstrates practical understanding of:
 | Bronze ingestion | Complete |
 | Bronze validation | Complete |
 | Silver design | Complete |
-| Silver transformations | In progress / iterative |
+| Silver transformations | Complete |
 | Gold architecture | Complete |
 | Gold views | Complete |
 | Gold quality checks | Complete |
 | Gold tests | Implemented |
 | Sales fact validation with actual sales records | Pending available Silver sales data |
-| Final project documentation | In progress |
+| Final project documentation | Complete |
 | Production orchestration | Out of scope |
 
 ---
