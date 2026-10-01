@@ -1,5 +1,8 @@
 # Data Warehouse ETL Pipeline
 
+![alt text](<datawarehouse-etl (1).png>)
+
+
 A professional end-to-end Data Warehouse ETL pipeline built with **Python, MySQL, SQL, and a Bronze-Silver-Gold architecture**.
 
 The project demonstrates how source-system data can be acquired, loaded into a raw Bronze layer, cleaned and standardized in Silver, and transformed into business-oriented analytical objects in Gold.
@@ -112,6 +115,9 @@ ERP provides:
 
 ---
 
+![alt text](<datawarehouse-etl (3).png>)
+
+
 ## 4. Source Data Inventory
 
 | Source File | Source System | Rows | Columns |
@@ -220,6 +226,8 @@ Purpose:
 ```
 
 ---
+
+![alt text](<datawarehouse-etl (4).png>)
 
 ## 7. Project Structure
 
@@ -401,6 +409,10 @@ to provide warehouse-load metadata.
 ---
 
 ## 11. Gold Layer
+
+![alt text](<datawarehouse-etl (2).png>)
+
+
 
 Gold is the final business-facing analytical layer.
 
@@ -750,6 +762,9 @@ This project demonstrates practical understanding of:
 
 ---
 
+![alt text](<etl (1).png>)
+
+
 ## 19. Project Status
 
 | Area | Status |
@@ -798,6 +813,9 @@ These are outside the scope of the current implementation.
 ---
 
 ## 21. Final Architecture
+
+![alt text](<etl (2).png>)
+
 
 ```text
                        SOURCE SYSTEMS
