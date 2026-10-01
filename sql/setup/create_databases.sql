@@ -1,58 +1,76 @@
 /*
-=================================================================
-Data Warehouse ETL Pipeline - MySQL Database Initialization
-=================================================================
+===============================================================================
+Script: create_databases.sql
 
 Purpose:
-    Creates the MySQL databases used for the Bronze, Silver,
-    and Gold layers of the data warehouse.
+    Initialize the empty MySQL data warehouse foundation for the
+    Data Warehouse ETL Pipeline project.
 
-Architecture:
-    Bronze -> Raw source data
-    Silver -> Cleaned and standardized data
-    Gold   -> Business-ready analytical data
+Description:
+    This script creates three separate MySQL databases representing the
+    major layers of the data warehouse:
 
-Database naming:
-    retail_bronze
-    retail_silver
-    retail_gold
+        1. dw_bronze
+           Raw/source-preserving data.
 
-WARNING:
-    This script drops and recreates the warehouse databases.
-    Running this script will permanently delete existing data
-    inside these databases.
+        2. dw_silver
+           Cleaned and standardized data.
 
-    Use this script only for local development or when a full
-    database reset is intentionally required.
+        3. dw_gold
+           Business-ready analytical data.
 
-=================================================================
+    At this stage, the databases are intentionally empty.
+    No tables, source data, transformations, dimensions, or facts
+    are created by this script.
+
+Execution:
+    This script is executed automatically by the Python database
+    initialization script:
+
+        scripts/setup_database.py
+
+    It can also be executed directly using a MySQL client when required.
+
+Safety:
+    This script does NOT drop existing databases.
+
+    CREATE DATABASE IF NOT EXISTS is used so that re-running the
+    script does not destroy existing databases or their data.
+
+Dependencies:
+    - MySQL Server must be running.
+    - The executing MySQL user must have sufficient privileges
+      to create databases.
+
+===============================================================================
 */
 
--- ===============================================================
--- BRONZE LAYER
--- Raw source data
--- ===============================================================
 
-DROP DATABASE IF EXISTS retail_bronze;
+-- ============================================================================
+-- BRONZE DATABASE
+-- ============================================================================
+-- Stores raw/source-preserving data during the Bronze ETL stage.
+-- The database is currently created empty.
 
-CREATE DATABASE retail_bronze;
-
-
--- ===============================================================
--- SILVER LAYER
--- Cleaned and standardized data
--- ===============================================================
-
-DROP DATABASE IF EXISTS retail_silver;
-
-CREATE DATABASE retail_silver;
+CREATE DATABASE IF NOT EXISTS dw_bronze
+    CHARACTER SET utf8mb4;
 
 
--- ===============================================================
--- GOLD LAYER
--- Business-ready analytical data
--- ===============================================================
+-- ============================================================================
+-- SILVER DATABASE
+-- ============================================================================
+-- Stores cleaned and standardized data during the Silver ETL stage.
+-- The database is currently created empty.
 
-DROP DATABASE IF EXISTS retail_gold;
+CREATE DATABASE IF NOT EXISTS dw_silver
+    CHARACTER SET utf8mb4;
 
-CREATE DATABASE retail_gold;
+
+-- ============================================================================
+-- GOLD DATABASE
+-- ============================================================================
+-- Stores business-ready analytical data during the Gold ETL stage.
+-- The database is currently created empty.
+
+CREATE DATABASE IF NOT EXISTS dw_gold
+    CHARACTER SET utf8mb4;
