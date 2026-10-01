@@ -1,58 +1,70 @@
 /*
-=================================================================
-Data Warehouse ETL Pipeline - MySQL Database Initialization
-=================================================================
+===============================================================================
+Script: create_databases.sql
 
 Purpose:
-    Creates the MySQL databases used for the Bronze, Silver,
-    and Gold layers of the data warehouse.
+    Initialize the empty MySQL data warehouse foundation for the
+    Data Warehouse ETL Pipeline project.
 
-Architecture:
-    Bronze -> Raw source data
-    Silver -> Cleaned and standardized data
-    Gold   -> Business-ready analytical data
+Description:
+    This script creates three separate MySQL databases representing the
+    major layers of the warehouse:
 
-Database naming:
-    retail_bronze
-    retail_silver
-    retail_gold
+        1. retail_bronze
+           Raw/source-preserving data.
 
-WARNING:
-    This script drops and recreates the warehouse databases.
-    Running this script will permanently delete existing data
-    inside these databases.
+        2. retail_silver
+           Cleaned and standardized data.
 
-    Use this script only for local development or when a full
-    database reset is intentionally required.
+        3. retail_gold
+           Business-ready analytical data.
 
-=================================================================
+    At this stage, the databases are intentionally empty.
+    No tables, source data, transformations, dimensions, or facts
+    are created by this script.
+
+Execution:
+    Run this script when setting up a new development environment
+    or when provisioning the warehouse databases.
+
+Safety:
+    This script does NOT drop existing databases.
+    CREATE DATABASE IF NOT EXISTS is used so that re-running the
+    script does not destroy existing data.
+
+Dependencies:
+    MySQL server must be running and the executing user must have
+    sufficient privileges to create databases.
+
+===============================================================================
 */
 
--- ===============================================================
--- BRONZE LAYER
--- Raw source data
--- ===============================================================
 
-DROP DATABASE IF EXISTS retail_bronze;
+-- ============================================================================
+-- BRONZE DATABASE
+-- ============================================================================
+-- Stores raw/source-preserving data in later ETL stages.
+-- The database is currently created empty.
 
-CREATE DATABASE retail_bronze;
-
-
--- ===============================================================
--- SILVER LAYER
--- Cleaned and standardized data
--- ===============================================================
-
-DROP DATABASE IF EXISTS retail_silver;
-
-CREATE DATABASE retail_silver;
+CREATE DATABASE IF NOT EXISTS retail_bronze
+    CHARACTER SET utf8mb4;
 
 
--- ===============================================================
--- GOLD LAYER
--- Business-ready analytical data
--- ===============================================================
+-- ============================================================================
+-- SILVER DATABASE
+-- ============================================================================
+-- Stores cleaned, standardized, and transformed data.
+-- The database is currently created empty.
 
-DROP DATABASE IF EXISTS retail_gold;
+CREATE DATABASE IF NOT EXISTS retail_silver
+    CHARACTER SET utf8mb4;
 
-CREATE DATABASE retail_gold;
+
+-- ============================================================================
+-- GOLD DATABASE
+-- ============================================================================
+-- Stores business-ready analytical data.
+-- The database is currently created empty.
+
+CREATE DATABASE IF NOT EXISTS retail_gold
+    CHARACTER SET utf8mb4;
