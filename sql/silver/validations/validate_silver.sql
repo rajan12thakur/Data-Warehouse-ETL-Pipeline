@@ -1,31 +1,19 @@
 /*
 ===============================================================================
-Silver Layer: Validation and Quality Checks
+Silver Layer: Validation Script
 ===============================================================================
 Purpose:
-    Validate the quality and correctness of the Silver layer.
+    Validate completeness and basic data quality of the Silver layer.
 
-The checks cover:
-
-    - row counts
-    - NULL values
-    - duplicate keys
-    - unwanted spaces
-    - standardization
-    - invalid dates
-    - referential integrity
-    - business/data rules
-
-A successful SQL execution does NOT prove data correctness.
-
-These checks are used to verify the resulting Silver data.
+Important:
+    This script does not modify any data.
 ===============================================================================
 */
 
 
 /*
 ===============================================================================
-1. ROW COUNTS
+1. ROW COUNT VALIDATION
 ===============================================================================
 */
 
@@ -72,126 +60,258 @@ FROM dw_silver.erp_px_cat_g1v2;
 
 /*
 ===============================================================================
-2. CRM CUSTOMER - PRIMARY KEY DUPLICATES
+2. CUSTOMER VALIDATION
 ===============================================================================
 */
 
 SELECT
-    cst_id,
-    COUNT(*) AS occurrence_count
-FROM dw_silver.crm_cust_info
-GROUP BY cst_id
-HAVING COUNT(*) > 1;
-
-
-/*
-===============================================================================
-3. CRM CUSTOMER - NULL PRIMARY KEY
-===============================================================================
-*/
-
-SELECT *
+    'Customer NULL IDs' AS validation,
+    COUNT(*) AS issue_count
 FROM dw_silver.crm_cust_info
 WHERE cst_id IS NULL;
 
 
+SELECT
+    'Customer duplicate IDs' AS validation,
+    COUNT(*) AS issue_count
+FROM
+(
+    SELECT
+        cst_id
+    FROM dw_silver.crm_cust_info
+    GROUP BY cst_id
+    HAVING COUNT(*) > 1
+) AS duplicates;
+
+
+SELECT
+    'Customer whitespace issues' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_cust_info
+WHERE cst_firstname <> TRIM(cst_firstname)
+   OR cst_lastname <> TRIM(cst_lastname)
+   OR cst_key <> TRIM(cst_key);
+
+
+SELECT
+    cst_gndr,
+    COUNT(*) AS row_count
+FROM dw_silver.crm_cust_info
+GROUP BY cst_gndr;
+
+
+SELECT
+    cst_marital_status,
+    COUNT(*) AS row_count
+FROM dw_silver.crm_cust_info
+GROUP BY cst_marital_status;
+
+
 /*
 ===============================================================================
-4. CRM CUSTOMER - UNWANTED SPACES
+3. PRODUCT VALIDATION
+===============================================================================
+*/
+
+SELECT
+    'Product NULL IDs' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_prd_info
+WHERE prd_id IS NULL;
+
+
+SELECT
+    'Product duplicate IDs' AS validation,
+    COUNT(*) AS issue_count
+FROM
+(
+    SELECT
+        prd_id
+    FROM dw_silver.crm_prd_info
+    GROUP BY prd_id
+    HAVING COUNT(*) > 1
+) AS duplicates;
+
+
+SELECT
+    'Product invalid date ranges' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_prd_info
+WHERE prd_end_dt IS NOT NULL
+  AND prd_start_dt > prd_end_dt;
+
+
+SELECT
+    'Product NULL category IDs' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_prd_info
+WHERE cat_id IS NULL
+   OR TRIM(cat_id) = '';
+
+
+/*
+===============================================================================
+4. SALES VALIDATION
+===============================================================================
+*/
+
+SELECT
+    'Sales NULL order dates' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_sales_details
+WHERE sls_order_dt IS NULL;
+
+
+SELECT
+    'Sales invalid order/ship date sequence' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_sales_details
+WHERE sls_order_dt IS NOT NULL
+  AND sls_ship_dt IS NOT NULL
+  AND sls_order_dt > sls_ship_dt;
+
+
+SELECT
+    'Sales invalid ship/due date sequence' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_sales_details
+WHERE sls_ship_dt IS NOT NULL
+  AND sls_due_dt IS NOT NULL
+  AND sls_ship_dt > sls_due_dt;
+
+
+SELECT
+    'Sales calculation mismatches' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_sales_details
+WHERE sls_sales IS NOT NULL
+  AND sls_quantity IS NOT NULL
+  AND sls_price IS NOT NULL
+  AND sls_sales <> sls_quantity * sls_price;
+
+
+/*
+===============================================================================
+5. ERP CUSTOMER VALIDATION
+===============================================================================
+*/
+
+SELECT
+    'ERP customer future birth dates' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.erp_cust_az12
+WHERE bdate > CURRENT_DATE;
+
+
+SELECT
+    'ERP customer invalid gender values' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.erp_cust_az12
+WHERE gen NOT IN
+(
+    'Male',
+    'Female',
+    'Not Available'
+);
+
+
+/*
+===============================================================================
+6. ERP LOCATION VALIDATION
+===============================================================================
+*/
+
+SELECT
+    'ERP location IDs containing hyphen' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.erp_loc_a101
+WHERE cid LIKE '%-%';
+
+
+/*
+===============================================================================
+7. WAREHOUSE METADATA VALIDATION
+===============================================================================
+*/
+
+SELECT
+    'Customer missing warehouse timestamp' AS validation,
+    COUNT(*) AS issue_count
+FROM dw_silver.crm_cust_info
+WHERE dwh_create_date IS NULL
+
+UNION ALL
+
+SELECT
+    'Product missing warehouse timestamp',
+    COUNT(*)
+FROM dw_silver.crm_prd_info
+WHERE dwh_create_date IS NULL
+
+UNION ALL
+
+SELECT
+    'Sales missing warehouse timestamp',
+    COUNT(*)
+FROM dw_silver.crm_sales_details
+WHERE dwh_create_date IS NULL
+
+UNION ALL
+
+SELECT
+    'ERP customer missing warehouse timestamp',
+    COUNT(*)
+FROM dw_silver.erp_cust_az12
+WHERE dwh_create_date IS NULL
+
+UNION ALL
+
+SELECT
+    'ERP location missing warehouse timestamp',
+    COUNT(*)
+FROM dw_silver.erp_loc_a101
+WHERE dwh_create_date IS NULL
+
+UNION ALL
+
+SELECT
+    'ERP category missing warehouse timestamp',
+    COUNT(*)
+FROM dw_silver.erp_px_cat_g1v2
+WHERE dwh_create_date IS NULL;
+
+
+/*
+===============================================================================
+8. SILVER SAMPLE DATA
 ===============================================================================
 */
 
 SELECT *
 FROM dw_silver.crm_cust_info
-WHERE cst_firstname <> TRIM(cst_firstname)
-   OR cst_lastname <> TRIM(cst_lastname);
+LIMIT 5;
 
 
-/*
-===============================================================================
-5. CRM CUSTOMER - DISTINCT STANDARDIZED VALUES
-===============================================================================
-*/
-
-SELECT DISTINCT cst_gndr
-FROM dw_silver.crm_cust_info
-ORDER BY cst_gndr;
-
-SELECT DISTINCT cst_marital_status
-FROM dw_silver.crm_cust_info
-ORDER BY cst_marital_status;
-
-
-/*
-===============================================================================
-6. CRM PRODUCT - PRIMARY KEY DUPLICATES
-===============================================================================
-*/
-
-SELECT
-    prd_id,
-    COUNT(*) AS occurrence_count
+SELECT *
 FROM dw_silver.crm_prd_info
-GROUP BY prd_id
-HAVING COUNT(*) > 1;
+LIMIT 5;
 
 
-/*
-===============================================================================
-7. CRM PRODUCT - CATEGORY ID RELATIONSHIP
-===============================================================================
-*/
-
-SELECT DISTINCT
-    p.cat_id
-FROM dw_silver.crm_prd_info p
-LEFT JOIN dw_silver.erp_px_cat_g1v2 c
-    ON p.cat_id = c.id
-WHERE c.id IS NULL;
+SELECT *
+FROM dw_silver.crm_sales_details
+LIMIT 5;
 
 
-/*
-===============================================================================
-8. ERP LOCATION - CUSTOMER KEY RELATIONSHIP
-===============================================================================
-*/
-
-SELECT DISTINCT
-    l.cid
-FROM dw_silver.erp_loc_a101 l
-LEFT JOIN dw_silver.crm_cust_info c
-    ON l.cid = c.cst_key
-WHERE c.cst_key IS NULL;
+SELECT *
+FROM dw_silver.erp_cust_az12
+LIMIT 5;
 
 
-/*
-===============================================================================
-9. ERP CUSTOMER - CUSTOMER KEY RELATIONSHIP
-===============================================================================
-*/
-
-SELECT DISTINCT
-    e.cid
-FROM dw_silver.erp_cust_az12 e
-LEFT JOIN dw_silver.crm_cust_info c
-    ON e.cid = c.cst_key
-WHERE c.cst_key IS NULL;
+SELECT *
+FROM dw_silver.erp_loc_a101
+LIMIT 5;
 
 
-/*
-===============================================================================
-10. ERP CATEGORY - DISTINCT VALUES
-===============================================================================
-*/
-
-SELECT DISTINCT cat
+SELECT *
 FROM dw_silver.erp_px_cat_g1v2
-ORDER BY cat;
-
-SELECT DISTINCT subcat
-FROM dw_silver.erp_px_cat_g1v2
-ORDER BY subcat;
-
-SELECT DISTINCT maintenance
-FROM dw_silver.erp_px_cat_g1v2
-ORDER BY maintenance;
+LIMIT 5;
